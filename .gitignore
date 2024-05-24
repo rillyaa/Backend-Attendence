@@ -1,5 +1,6 @@
-#credentials
-attendence-credentials.json
+#file
+uploads/
+
 
 # Logs
 logs

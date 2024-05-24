@@ -16,6 +16,8 @@ const absenRouter = require('./api-src/absen/absen.router');
 app.use(express.json());
 app.use(bodyParser.json());
 
+app.use(express.urlencoded({ extended: true }));
+
 app.use('/', userRouter);
 app.use('/', izinRouter);
 app.use('/', pegawaiRouter);

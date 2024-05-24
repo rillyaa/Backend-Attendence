@@ -70,9 +70,22 @@ module.exports = {
 
     login: async (req, res) => {
         try {
-            const { email, password } = req.body;
-            const results = await getUserbyEmail(email);
-    
+            console.log('Request Body:', req.body);
+
+        // Extract email and password from request body
+        const { email, password } = req.body;
+
+        // Log the extracted email and password
+        console.log('Email:', email);
+        console.log('Password:', password);
+
+        // Check if email is URL-encoded and decode it
+        const decodedEmail = decodeURIComponent(email);
+        console.log('Decoded Email:', decodedEmail);
+
+        // Fetch user by email
+        const results = await getUserbyEmail(decodedEmail);
+        
             if (!results) {
                 return res.json({
                     error: true,

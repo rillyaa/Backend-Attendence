@@ -1,4 +1,4 @@
-const { attendance } = require('./absen.service');
+const { attendance, updateClockOut, getAttendance, getAttendanceById } = require('./absen.service');
 const multer = require('multer');
 const path = require('path');
 
@@ -17,7 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage }).single('image');
 
 // Fungsi untuk menangani request dan menyimpan data ke database
-function saveAttendance(req, res) {
+function clockIn(req, res) {
     // Menggunakan multer untuk mengunggah gambar
     upload(req, res, (err) => {
         if (err) {
@@ -26,18 +26,15 @@ function saveAttendance(req, res) {
         }
 
         // Mendapatkan data dari request body
-        const { id_pegawai, tanggal_absen, clock_in, clock_out } = req.body;
+        const { id_pegawai } = req.body;
         
         // Mengambil lokasi file gambar atau null jika tidak ada file yang diunggah
         const image = req.file ? req.file.path : null;
 
         // Menyiapkan data untuk disimpan ke database
         const attendanceData = {
-            id_pegawai: id_pegawai,
-            tanggal_absen: tanggal_absen,
-            clock_in: clock_in,
-            clock_out: clock_out,
-            image: image
+            id_pegawai,
+            image
         };
 
         // Memanggil service untuk menyimpan data ke database
@@ -48,11 +45,71 @@ function saveAttendance(req, res) {
             }
 
             // Jika berhasil, kembalikan respons berhasil
-            res.status(200).json({ success: 1, message: 'Attendance saved successfully' });
+            res.status(200).json({ success: 1, message: 'Clock-in saved successfully' });
         });
     });
 }
 
-module.exports = { saveAttendance };
+function clockOut(req, res) {
+    // Mendapatkan data dari request body
+    const { id_pegawai, tanggal_absen } = req.body;
 
+    // Menyiapkan data untuk diperbarui di database
+    const attendanceData = {
+        id_pegawai,
+        tanggal_absen
+    };
 
+    // Memanggil service untuk memperbarui data di database
+    updateClockOut(attendanceData, (error, results) => {
+        if (error) {
+            console.error('Error updating clock-out:', error);
+            return res.status(500).json({ success: 0, message: 'Internal Server Error' });
+        }
+
+        // Jika berhasil, kembalikan respons berhasil
+        res.status(200).json({ success: 1, message: 'Clock-out updated successfully' });
+    });
+}
+
+// Function to handle fetching all attendance data
+function getAllAttendance(req, res) {
+    getAttendance((error, results) => {
+        if (error) {
+            console.error('Error fetching attendance:', error);
+            return res.status(500).json({ success: 0, message: 'Internal Server Error' });
+        }
+        res.status(200).json({ success: 1, data: results });
+    });
+}
+
+// Function to handle fetching attendance data by ID
+function getAttendanceId(req, res) {
+    const id_pegawai = req.params.id_pegawai;
+
+    // Log nilai id_pegawai yang diterima dari client
+    console.log('Nilai id_pegawai yang diterima:', id_pegawai);
+
+    getAttendanceById(id_pegawai, (err, results) => {
+        if(err) {
+            console.log(err);
+            return res.status(500).json({
+                error: true,
+                message: 'Internal Server Error'
+            });
+        }
+        if(!results) {
+            return res.status(404).json({
+                error: true,
+                message: 'Attendance not found'
+            });
+        }
+        return res.status(200).json({
+            error: false, 
+            message: 'Attendance found!',
+            dataAttendance: results
+        });
+    });
+}
+
+module.exports = { clockIn, clockOut, getAllAttendance, getAttendanceId };

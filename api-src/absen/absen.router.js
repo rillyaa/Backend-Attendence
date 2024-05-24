@@ -1,9 +1,14 @@
-const {
-    saveAttendance
-} = require('./absen.controller');
+const express = require('express');
+const router = express.Router();
+const { clockIn, clockOut, getAllAttendance, getAttendanceId } = require('./absen.controller');
 
-const router = require('express').Router();
+// Route for clocking in
+router.post('/absen/clock-in', clockIn);
 
-router.post('/absen', saveAttendance);
+// Route for clocking out
+router.post('/absen/clock-out', clockOut);
+
+router.get('/absensi', getAllAttendance);
+router.get('/absen/:id_pegawai', getAttendanceId );
 
 module.exports = router;
